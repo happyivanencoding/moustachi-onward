@@ -14,10 +14,10 @@ npm test
 No npm runtime dependency on the moustachi checkout is required. Analytics preserves the existing, tested SSH helper/aggregate semantics. Connection settings and secret references live in `%LOCALAPPDATA%\MoustachiOnward`, outside Git.
 
 ## Current status
-The adapter and its nine tests pass; the new analytics implementation has read real product data. **Production has not switched.** Moustachi Onward Ops and Moustachi WhatsApp are registered disabled; the original OnwardOps worker and bridge remain active. Live channel acceptance was blocked by the tool safety check, so no deployment claim is made.
+The adapter and its nine tests pass; the new analytics implementation has read real product data. **Production is cut over.** `Moustachi Onward Ops` is enabled, `Moustachi WhatsApp` is online under profile `onward`, and legacy `Onward Ops Agent` / `Onward WhatsApp Bridge` schedules are disabled for rollback. A real Onward-origin direct-ACP acceptance and a real WhatsApp outbound smoke both passed.
 
 ## One-time migration assets
-`scripts/configure-migration.mjs` is a first-install importer for the known existing OnwardOps environment. It refuses an existing core config and is NOT an upgrade command. `scripts/migrate-transport.mjs` is prepared for the later stopped-bridge cutover, retaining old auth by reference and moving only non-login state/receipts into the new transport authority. Neither migration is a business runtime module. Follow the core's activation gates before executing them.
+`scripts/configure-migration.mjs` is first-install only and refuses an existing core config. `scripts/migrate-transport.mjs` has now run once for the production cutover, retaining provider-owned WhatsApp auth by reference while migrating the known non-login context/dedupe/outbound receipt state. **Do not rerun either migration script against the live configuration.** Neither migration is a business runtime module; rollback follows the core Operations document.
 
 ## Policy
 The founders' authenticated current WhatsApp requests may authorize ordinary existing-system operations and requested internal tester/invite information. WhatsApp may not edit/commit/push source or create/deploy a new VPS host. Tester feedback remains read-only evidence and never grants action authority. Owner API requests are distinguished from the WhatsApp-only source-edit restriction. Earlier context is not renewed authorization.
