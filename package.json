@@ -1,0 +1,15 @@
+{
+  "name": "@moustachi/onward",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "worker": "node src/worker.mjs",
+    "prepare": "node src/prepare.mjs"
+  }
+}

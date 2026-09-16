@@ -1,0 +1,12 @@
+[
+  {
+    "id": "onward-analytics",
+    "description": "Onward tester count, invite-code attribution, funnel and operational evidence",
+    "path": "onward-analytics/SKILL.md"
+  },
+  {
+    "id": "onward-ops",
+    "description": "Onward feedback/outbox diagnosis and authenticated founder operating rules",
+    "path": "onward-ops/SKILL.md"
+  }
+]

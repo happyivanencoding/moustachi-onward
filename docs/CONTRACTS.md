@@ -1,0 +1,5 @@
+# Contracts v1
+Profile prepare: process receives one UTF-8 JSON object `{schema:"moustachi.prepare/v1", profileId, runId, taskId, input, recent, history}` on stdin; outputs `{schema:"moustachi.prepare/v1",instruction}` on stdout. No agent runtime or session ownership here. Analytics enrichment reuses the observed existing SSH helper; profile paths are installation configuration.
+Worker calls the independently running core's POST /v1 using `submit/get/retry/status` only. The scoped credential allows only profile onward, origin feedback. Founder WhatsApp routing is installed in the generic transport, not in an Onward Web server.
+Web retains `/api/internal/onward-ops` and its existing claim/complete/release contract. The older fields `acpSessionId` and `acpRunId` carry the ACP-native session and Moustachi run IDs for correlation; Web does not resume them. Existing SSH proxy is transport-only and remains unchanged.
+No dependency on the moustachi repository as an npm file import. No Runtime ACP, AgentDock, Web internal JS imports, or long-lived worker session.

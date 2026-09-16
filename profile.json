@@ -1,0 +1,17 @@
+{
+  "schema": "moustachi.profile/v1",
+  "personaFile": "persona.md",
+  "skillsDir": "skills",
+  "mode": "agent",
+  "prepare": {
+    "command": "node",
+    "args": [
+      "src/prepare.mjs"
+    ]
+  },
+  "sessionBudgets": {
+    "maxTurns": 8,
+    "maxChars": 100000,
+    "idleMs": 21600000
+  }
+}
