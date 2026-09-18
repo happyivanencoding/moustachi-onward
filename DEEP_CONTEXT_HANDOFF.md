@@ -1,5 +1,5 @@
 # Moustachi Onward — repository handoff
-2026-09-16. Highest policy: C:\dev\career-ops\DEEP_CONTEXT_HANDOFF_FINAL.md.
+2026-09-16. Highest policy now lives at C:\dev\onward\DEEP_CONTEXT_HANDOFF_FINAL.md.
 
 Source is C:\dev\moustachi-onward, origin happyivanencoding/moustachi-onward main. Core is C:\dev\moustachi, independently maintained. Read README.md, docs/CONTRACTS.md and core docs/OPERATIONS.md before deployment.
 
