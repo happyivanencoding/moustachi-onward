@@ -31,13 +31,18 @@ function founderInviteCodeRegistry(){
  const value=readJson(inviteCodeRegistryFile,[]),codes=Array.isArray(value)?value:Array.isArray(value?.codes)?value.codes:[];
  return [...new Set(codes.map(code=>String(code||'').trim().toUpperCase()).filter(code=>/^ONWARD\d{3}$/.test(code)))].slice(0,100);
 }
-function fetchFounderAnalyticsAggregate(){
+function fetchFounderAnalyticsAggregate(request={}){
  if(!fs.existsSync(analyticsHelper))throw new Error(`Founder analytics helper missing: ${analyticsHelper}`);
+ const mode=['summary','behavior','identity'].includes(String(request?.mode||''))?String(request.mode):'summary';
+ const targets=[...new Set((Array.isArray(request?.targets)?request.targets:[]).map(value=>String(value||'').trim().toUpperCase()).filter(value=>/^(?:T\d{1,3}|ONWARD(?:V1|\d{3}))$/.test(value)))].slice(0,12);
+ const includeEmail=request?.includeEmail===true;
  const user=String(config.sshUser||'ubuntu').trim(),server=String(config.sshServer||'141.95.18.14').trim();
  const key=path.resolve(String(config.sshKey||path.join(os.homedir(),'.ssh','id_ed25519_server_infra')));
  const known=path.resolve(String(config.sshKnownHosts||path.join(os.homedir(),'.ssh','known_hosts_ovh')));
  const script=fs.readFileSync(analyticsHelper,'utf8');
- const result=spawnSync('ssh',['-i',key,'-o',`UserKnownHostsFile=${known}`,'-o','StrictHostKeyChecking=yes','-o','BatchMode=yes',`${user}@${server}`,'sudo -n python3 -'],{input:script,encoding:'utf8',windowsHide:true,timeout:30000,maxBuffer:2*1024*1024});
+ const env=[`ONWARD_ANALYTICS_MODE=${mode}`,...(targets.length?[`ONWARD_ANALYTICS_TARGETS=${targets.join(',')}`]:[]),...(includeEmail?['ONWARD_ANALYTICS_INCLUDE_EMAIL=1']:[])];
+ const remote=`sudo -n env ${env.join(' ')} python3 -`;
+ const result=spawnSync('ssh',['-i',key,'-o',`UserKnownHostsFile=${known}`,'-o','StrictHostKeyChecking=yes','-o','BatchMode=yes',`${user}@${server}`,remote],{input:script,encoding:'utf8',windowsHide:true,timeout:30000,maxBuffer:4*1024*1024});
  if(result.error)throw result.error;
  if(result.status!==0)throw new Error(String(result.stderr||'Founder analytics aggregate failed.').trim().slice(0,1200));
  const raw=String(result.stdout||'').trim();if(!raw)throw new Error('Founder analytics aggregate returned no JSON.');

@@ -1,11 +1,11 @@
 # Moustachi Onward — repository handoff
-2026-09-16. Highest policy now lives at C:\dev\onward\DEEP_CONTEXT_HANDOFF_FINAL.md.
+2026-09-19. Highest policy now lives at C:\dev\onward\DEEP_CONTEXT_HANDOFF_FINAL.md.
 
 Source is C:\dev\moustachi-onward, origin happyivanencoding/moustachi-onward main. Core is C:\dev\moustachi, independently maintained. Read README.md, docs/CONTRACTS.md and core docs/OPERATIONS.md before deployment.
 
 src/prompts.mjs retains the source-authoritative JPilot dc5b94c prompt/analytics behavior. src/business.mjs and analytics-aggregate.py perform business evidence reads. src/prepare.mjs exposes prepare/v1. src/worker.mjs uses core submit/get/retry and the unchanged Web feedback lease/outbox contract. It has no ACP client or Runtime session ownership.
 
-Nine business tests passed and the real analytics aggregate is available. Core/native ACP/Runtime tools have separately passed real acceptance. A real scoped Onward/WhatsApp-origin acceptance also passed through profile preparation and direct Codex ACP, returning `MOUSTACHI_ONWARD_ACCEPTANCE_OK` before production cutover.
+Founder Analytics now has three evidence tiers. Summary retains fast tester/invite/funnel counts. Behavior returns current-window cohort labels plus aggregate page foreground-visible time, clicks and bounded per-session paths; when one or a few Txx/invite-code targets are named it also retains per-user page/click detail. Identity is selected only for explicit founder identity/CV questions and returns bounded candidate name/professional context for those targets, with email only when explicitly requested. The current 13-user production cohort was read successfully through this path, including T05=ONWARD019 and T13=ONWARD540; the default behavior prompt was reduced below the Core 52k preparation limit. Current business regression count is 12/12. Core/native ACP/Runtime tools have separately passed real acceptance.
 
 Production is cut over: `Moustachi Core` and `Moustachi WhatsApp` are Running, and `Moustachi Onward Ops` is enabled with successful periodic no-work cycles. Legacy `Onward Ops Agent` and `Onward WhatsApp Bridge` under `%LOCALAPPDATA%\OnwardOps` are Disabled for rollback. The one-time transport migration completed, preserving/importing 27 rolling context messages, 29 processed IDs and 3 pre-existing outbound receipts while referencing provider-owned WhatsApp auth in place. The new Bridge verified connected/paired/group-configured health and delivered a real outbound smoke.
 
