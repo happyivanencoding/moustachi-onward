@@ -90,6 +90,8 @@ test('founder analytics request routes summary, behavior and explicit identity q
  assert.deepEqual(founderAnalyticsRequest({message:'今天有多少测试用户？'}),{mode:'summary',targets:[]});
  assert.deepEqual(founderAnalyticsRequest({message:'这个星期每个页面停留多久，路径和点击是多少？'}),{mode:'behavior',targets:[]});
  assert.deepEqual(founderAnalyticsRequest({message:'T05 T13 查看他们的简历，告诉我是谁'}),{mode:'identity',targets:['T05','T13'],includeEmail:false});
+ assert.deepEqual(founderAnalyticsRequest({message:'ONWARD7208 的路径和点击有什么异常？'}),{mode:'behavior',targets:['ONWARD7208']});
+ assert.deepEqual(founderAnalyticsRequest({message:'ONWARD7208 的简历背景是什么？'}),{mode:'identity',targets:['ONWARD7208'],includeEmail:false});
  assert.deepEqual(founderAnalyticsRequest({message:'这两个人的邮箱呢？',conversationContext:[{text:'刚才说的是 T05 和 T13'}]}),{mode:'identity',targets:['T05','T13'],includeEmail:true});
 });
 
@@ -114,6 +116,18 @@ test('behavior and identity analytics keep only bounded founder-safe fields',()=
  assert(!serialized.includes('secret'));
  const withEmail=sanitizeFounderAnalyticsAggregate({...raw,identity:{...raw.identity,includeEmail:true}});
  assert.equal(withEmail.identity.users[0].email,'private@example.com');
+});
+
+test('founder-safe analytics preserves second-cohort four-digit invite codes',()=>{
+ const raw={available:true,mode:'identity',generatedAt:'2026-09-21T21:00:00+02:00',timeZone:'Europe/Paris',windowDays:7,windowStart:'2026-09-15',
+  attributedTesterCodes:{registrationsByInviteCode:{ONWARD7208:1}},overallObservedProduct:{testUsers:1},
+  behavior:{trackedUsers:1,totalVisibleDurationMs:1,clickTotal:1,sessionCount:1,pages:[],clicks:[],users:[{cohortLabel:'T33',testerRef:'tester-deadbeef01',inviteCode:'ONWARD7208',authMode:'password',registeredAt:'2026-09-21T21:01+02:00',activeDays:['2026-09-21'],furthestStage:'job_opened',totalVisibleDurationMs:1,clickTotal:1,sessionCount:1,sessions:[]}]},
+  identity:{requestedTargets:['ONWARD7208'],includeEmail:false,users:[{cohortLabel:'T33',testerRef:'tester-deadbeef01',inviteCode:'ONWARD7208',authMode:'password',profileName:'Candidate',professionalContext:['Marketing']}]},
+ };
+ const safe=sanitizeFounderAnalyticsAggregate(raw);
+ assert.equal(safe.behavior.users[0].inviteCode,'ONWARD7208');
+ assert.deepEqual(safe.identity.requestedTargets,['ONWARD7208']);
+ assert.equal(safe.identity.users[0].inviteCode,'ONWARD7208');
 });
 
 test('founder analytics aggregate is strictly reduced before entering the ACP prompt',()=>{

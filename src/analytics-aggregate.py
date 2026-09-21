@@ -20,7 +20,7 @@ if MODE not in {"summary", "behavior", "identity"}:
 TARGETS = [
     value.strip().upper()
     for value in str(os.environ.get("ONWARD_ANALYTICS_TARGETS", "")).split(",")
-    if re.fullmatch(r"(?:T\d{1,3}|ONWARD(?:V1|\d{3}))", value.strip(), flags=re.I)
+    if re.fullmatch(r"(?:T\d{1,3}|ONWARD(?:V1|\d{3,4}))", value.strip(), flags=re.I)
 ]
 INCLUDE_EMAIL = str(os.environ.get("ONWARD_ANALYTICS_INCLUDE_EMAIL", "")).strip() == "1"
 

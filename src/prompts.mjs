@@ -66,8 +66,8 @@ export function founderAnalyticsRequest(input={}){
  const current=clean(input.message,3000),text=[...context,current].join('\n');
  if(!text)return null;
  const targetSource=current||text;
- let targets=[...targetSource.matchAll(/\b(?:T\d{1,3}|ONWARD(?:V1|\d{3}))\b/gi)].map(match=>match[0].toUpperCase());
- if(!targets.length)targets=[...text.matchAll(/\b(?:T\d{1,3}|ONWARD(?:V1|\d{3}))\b/gi)].map(match=>match[0].toUpperCase());
+ let targets=[...targetSource.matchAll(/\b(?:T\d{1,3}|ONWARD(?:V1|\d{3,4}))\b/gi)].map(match=>match[0].toUpperCase());
+ if(!targets.length)targets=[...text.matchAll(/\b(?:T\d{1,3}|ONWARD(?:V1|\d{3,4}))\b/gi)].map(match=>match[0].toUpperCase());
  targets=[...new Set(targets)].slice(0,12);
  const identityIntent=/(是谁|谁是|姓名|名字|身份|简历|\bcv\b|背景|profile|candidate|email|e-mail|邮箱|adresse e-mail|qui est|who is)/i.test(current);
  if(targets.length&&identityIntent)return {mode:'identity',targets,includeEmail:/(email|e-mail|邮箱|adresse e-mail)/i.test(current)};
@@ -111,7 +111,7 @@ export function sanitizeFounderAnalyticsAggregate(value={}){
  const safeBehaviorUser=row=>({
   cohortLabel:/^T\d{2,3}$/.test(String(row?.cohortLabel||''))?String(row.cohortLabel):'',
   testerRef:/^tester-[a-f0-9]{10}$/.test(String(row?.testerRef||''))?String(row.testerRef):'',
-  inviteCode:/^ONWARD(?:V1|\d{3})$/.test(String(row?.inviteCode||''))?String(row.inviteCode):'',
+  inviteCode:/^ONWARD(?:V1|\d{3,4})$/.test(String(row?.inviteCode||''))?String(row.inviteCode):'',
   authMode:['password','google'].includes(String(row?.authMode||''))?String(row.authMode):'',
   registeredAt:clean(row?.registeredAt,80),activeDays:(Array.isArray(row?.activeDays)?row.activeDays:[]).slice(0,31).map(day=>clean(day,20)).filter(Boolean),
   furthestStage:clean(row?.furthestStage,80),totalVisibleDurationMs:integer(row?.totalVisibleDurationMs),clickTotal:integer(row?.clickTotal),sessionCount:integer(row?.sessionCount),
@@ -142,12 +142,12 @@ export function sanitizeFounderAnalyticsAggregate(value={}){
  if(mode==='identity'&&value.identity&&typeof value.identity==='object'){
   const includeEmail=value.identity.includeEmail===true;
   result.identity={
-   requestedTargets:(Array.isArray(value.identity.requestedTargets)?value.identity.requestedTargets:[]).slice(0,12).map(item=>clean(item,64)).filter(item=>/^(?:T\d{1,3}|ONWARD(?:V1|\d{3}))$/.test(item)),
+   requestedTargets:(Array.isArray(value.identity.requestedTargets)?value.identity.requestedTargets:[]).slice(0,12).map(item=>clean(item,64)).filter(item=>/^(?:T\d{1,3}|ONWARD(?:V1|\d{3,4}))$/.test(item)),
    includeEmail,
    users:(Array.isArray(value.identity.users)?value.identity.users:[]).slice(0,12).map(row=>({
     cohortLabel:/^T\d{2,3}$/.test(String(row?.cohortLabel||''))?String(row.cohortLabel):'',
     testerRef:/^tester-[a-f0-9]{10}$/.test(String(row?.testerRef||''))?String(row.testerRef):'',
-    inviteCode:/^ONWARD(?:V1|\d{3})$/.test(String(row?.inviteCode||''))?String(row.inviteCode):'',
+    inviteCode:/^ONWARD(?:V1|\d{3,4})$/.test(String(row?.inviteCode||''))?String(row.inviteCode):'',
     authMode:['password','google'].includes(String(row?.authMode||''))?String(row.authMode):'',
     profileName:clean(row?.profileName,120),
     professionalContext:(Array.isArray(row?.professionalContext)?row.professionalContext:[]).slice(0,8).map(line=>clean(line,280)).filter(Boolean),
