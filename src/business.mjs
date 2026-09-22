@@ -33,7 +33,7 @@ function founderInviteCodeRegistry(){
 }
 function fetchFounderAnalyticsAggregate(request={}){
  if(!fs.existsSync(analyticsHelper))throw new Error(`Founder analytics helper missing: ${analyticsHelper}`);
- const mode=['summary','behavior','identity'].includes(String(request?.mode||''))?String(request.mode):'summary';
+ const mode=['summary','retention','behavior','identity'].includes(String(request?.mode||''))?String(request.mode):'summary';
  const targets=[...new Set((Array.isArray(request?.targets)?request.targets:[]).map(value=>String(value||'').trim().toUpperCase()).filter(value=>/^(?:T\d{1,3}|ONWARD(?:V1|\d{3,4}))$/.test(value)))].slice(0,12);
  const includeEmail=request?.includeEmail===true;
  const user=String(config.sshUser||'ubuntu').trim(),server=String(config.sshServer||'141.95.18.14').trim();

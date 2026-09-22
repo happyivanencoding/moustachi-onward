@@ -1,7 +1,7 @@
 [
   {
     "id": "onward-analytics",
-    "description": "Onward tester count, invite-code attribution, funnel and operational evidence",
+    "description": "Onward tester count, return visits, invite-code attribution, funnel and operational evidence",
     "path": "onward-analytics/SKILL.md"
   },
   {

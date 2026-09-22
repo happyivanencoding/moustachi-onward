@@ -86,13 +86,33 @@ test('founder analytics intent is detected from the current message or recent gr
  assert.equal(shouldPrefetchFounderAnalytics({message:'把首页标题缩短一点'}),false);
 });
 
-test('founder analytics request routes summary, behavior and explicit identity questions separately',()=>{
+test('founder analytics request routes summary, retention, behavior and explicit identity questions separately',()=>{
  assert.deepEqual(founderAnalyticsRequest({message:'今天有多少测试用户？'}),{mode:'summary',targets:[]});
+ assert.deepEqual(founderAnalyticsRequest({message:'今天有多少是之前注册的用户又回来的？是哪些人？'}),{mode:'retention',targets:[]});
+ assert.deepEqual(founderAnalyticsRequest({message:'给我回访的人的邀请码就好',conversationContext:[{text:'今天有多少是之前注册的用户又回来的？'}]}),{mode:'retention',targets:[]});
  assert.deepEqual(founderAnalyticsRequest({message:'这个星期每个页面停留多久，路径和点击是多少？'}),{mode:'behavior',targets:[]});
  assert.deepEqual(founderAnalyticsRequest({message:'T05 T13 查看他们的简历，告诉我是谁'}),{mode:'identity',targets:['T05','T13'],includeEmail:false});
  assert.deepEqual(founderAnalyticsRequest({message:'ONWARD7208 的路径和点击有什么异常？'}),{mode:'behavior',targets:['ONWARD7208']});
  assert.deepEqual(founderAnalyticsRequest({message:'ONWARD7208 的简历背景是什么？'}),{mode:'identity',targets:['ONWARD7208'],includeEmail:false});
  assert.deepEqual(founderAnalyticsRequest({message:'这两个人的邮箱呢？',conversationContext:[{text:'刚才说的是 T05 和 T13'}]}),{mode:'identity',targets:['T05','T13'],includeEmail:true});
+});
+
+test('retention analytics keeps exact invite codes while stripping private identifiers',()=>{
+ const raw={available:true,mode:'retention',generatedAt:'2026-09-22T17:30:00+02:00',timeZone:'Europe/Paris',windowDays:7,windowStart:'2026-09-16',
+  attributedTesterCodes:{},overallObservedProduct:{},
+  retention:{day:'2026-09-22',returningUsersToday:2,inviteCodes:['ONWARD7208','ONWARD4440','SECRET'],users:[
+   {testerRef:'tester-deadbeef01',inviteCode:'ONWARD7208',authMode:'password',registeredAt:'2026-09-20T10:00+02:00',lastActiveBeforeToday:'2026-09-21T18:00+02:00',previousActiveDays:['2026-09-20','2026-09-21'],todayVisibleDurationMs:1000,todayClickTotal:2,todaySessionCount:1,profileId:'private-profile',email:'private@example.com'},
+   {testerRef:'tester-cafebabe02',inviteCode:'ONWARD4440',authMode:'password',registeredAt:'2026-09-21T09:00+02:00',lastActiveBeforeToday:'2026-09-21T09:30+02:00',previousActiveDays:['2026-09-21'],todayVisibleDurationMs:2000,todayClickTotal:3,todaySessionCount:1},
+  ]},
+ };
+ const safe=sanitizeFounderAnalyticsAggregate(raw),serialized=JSON.stringify(safe);
+ assert.equal(safe.mode,'retention');
+ assert.equal(safe.retention.returningUsersToday,2);
+ assert.deepEqual(safe.retention.inviteCodes,['ONWARD7208','ONWARD4440']);
+ assert.equal(safe.retention.users[0].lastActiveBeforeToday,'2026-09-21T18:00+02:00');
+ assert(!serialized.includes('private-profile'));
+ assert(!serialized.includes('private@example.com'));
+ assert(!serialized.includes('SECRET'));
 });
 
 test('behavior and identity analytics keep only bounded founder-safe fields',()=>{

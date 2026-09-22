@@ -15,7 +15,7 @@ DATA_ROOT = pathlib.Path(os.environ.get("ONWARD_ANALYTICS_DATA_ROOT", "/srv/apps
 WORKSPACE_ROOT = DATA_ROOT.parent
 ATTRIBUTION_RELIABLE_FROM = "2026-09-14T20:40:00+02:00"
 MODE = str(os.environ.get("ONWARD_ANALYTICS_MODE", "summary")).strip().lower()
-if MODE not in {"summary", "behavior", "identity"}:
+if MODE not in {"summary", "retention", "behavior", "identity"}:
     MODE = "summary"
 TARGETS = [
     value.strip().upper()
@@ -392,6 +392,74 @@ def summarize_identity(rows, behavior):
     return {"requestedTargets": TARGETS, "users": selected, "includeEmail": INCLUDE_EMAIL}
 
 
+def summarize_retention(rows, now):
+    today = now.date()
+    today_key = today.isoformat()
+    users = []
+    for row in rows:
+        registered = parse_time(row.get("registeredAt"))
+        if not registered or registered.date() >= today:
+            continue
+        _, events = read_profile_events(row.get("profileId"), 0)
+        prior_active_events = []
+        today_events = []
+        for event in events:
+            day = event_day(event.get("timestamp"))
+            if day == today_key:
+                today_events.append(event)
+            if event.get("event") not in {"page_enter", "page_heartbeat"} or not day:
+                continue
+            if day < today_key:
+                prior_active_events.append(event)
+        if not prior_active_events:
+            continue
+        if not any(event.get("event") in {"page_enter", "page_heartbeat"} for event in today_events):
+            continue
+        invite_code = str(row.get("inviteCode") or "").strip()
+        if TARGETS:
+            code_targets = {target for target in TARGETS if target.startswith("ONWARD")}
+            if code_targets and invite_code.upper() not in code_targets:
+                continue
+        previous_active_days = sorted({
+            event_day(event.get("timestamp"))
+            for event in prior_active_events
+            if event_day(event.get("timestamp"))
+        })
+        prior_times = [parse_time(event.get("timestamp")) for event in prior_active_events]
+        prior_times = [value for value in prior_times if value]
+        last_active = max(prior_times) if prior_times else None
+        today_visible_ms = sum(
+            max(0, int(event.get("durationMs", 0) or 0))
+            for event in today_events
+            if event.get("event") in {"page_exit", "page_heartbeat"}
+        )
+        today_clicks = sum(1 for event in today_events if event.get("event") == "click")
+        today_sessions = {
+            str(event.get("sessionId"))
+            for event in today_events
+            if str(event.get("sessionId") or "").strip()
+        }
+        users.append({
+            "testerRef": tester_ref(row.get("profileId")),
+            "inviteCode": invite_code[:64],
+            "authMode": str(row.get("authMode") or "")[:20],
+            "registeredAt": registered.isoformat(timespec="minutes"),
+            "lastActiveBeforeToday": last_active.isoformat(timespec="minutes") if last_active else None,
+            "previousActiveDays": previous_active_days[-8:],
+            "todayVisibleDurationMs": today_visible_ms,
+            "todayClickTotal": today_clicks,
+            "todaySessionCount": len(today_sessions),
+        })
+    users.sort(key=lambda item: (str(item.get("registeredAt") or ""), str(item.get("inviteCode") or ""), item["testerRef"]))
+    invite_codes = sorted({item["inviteCode"] for item in users if item.get("inviteCode")})
+    return {
+        "day": today_key,
+        "returningUsersToday": len(users),
+        "inviteCodes": invite_codes,
+        "users": users,
+    }
+
+
 def main():
     now = datetime.datetime.now(TZ)
     window_start = datetime.datetime.combine(now.date() - datetime.timedelta(days=WINDOW_DAYS - 1), datetime.time.min, TZ)
@@ -411,6 +479,8 @@ def main():
         "attributedTesterCodes": tracked,
         "overallObservedProduct": summarize_overall(),
     }
+    if MODE == "retention":
+        result["retention"] = summarize_retention(rows, now)
     if MODE in {"behavior", "identity"}:
         full_behavior = summarize_behavior(rows, window_start, window_start_ms)
         behavior = full_behavior

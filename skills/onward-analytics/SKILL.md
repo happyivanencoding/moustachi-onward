@@ -1,10 +1,11 @@
 ---
 name: onward-analytics
-description: Read Onward tester counts, behavior journeys, click paths and explicit founder-requested tester identity correctly.
+description: Read Onward tester counts, return visits, behavior journeys, click paths and explicit founder-requested tester identity correctly.
 ---
-Use the fresh analyticsAggregate supplied by the profile adapter before making another remote query. It has three modes:
+Use the fresh analyticsAggregate supplied by the profile adapter before making another remote query. It has four modes:
 
 - summary: persisted invite attribution, registrations, activity, funnel and progress.
+- retention: actual same-user return visits. A user counts as returned today only when retained Analytics shows qualifying activity on at least one earlier day and again today. Use the returned inviteCodes/users directly; never infer the list by subtracting today's registrations from today's active count.
 - behavior: adds aggregate page foreground-visible time, click counts, and bounded per-tester session paths. When the founder names one or a few Txx / invite-code targets, per-user page/click breakdown is included.
 - identity: only for explicit founder identity/CV questions; adds bounded candidate name and professional context for the requested targets. Email is included only when explicitly requested.
 
